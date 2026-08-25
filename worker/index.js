@@ -1,4 +1,4 @@
-const BASE_PATH = '/games/kyou-nani-taberu';
+const BASE_PATH = '/tools/kyou-nani-taberu';
 
 function assetRequest(request) {
   const url = new URL(request.url);

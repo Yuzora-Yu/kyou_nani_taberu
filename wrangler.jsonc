@@ -8,7 +8,7 @@
     "run_worker_first": true
   },
   "routes": [
-    { "pattern": "yu-zora.com/games/kyou-nani-taberu", "zone_name": "yu-zora.com" },
-    { "pattern": "yu-zora.com/games/kyou-nani-taberu/*", "zone_name": "yu-zora.com" }
+    { "pattern": "yu-zora.com/tools/kyou-nani-taberu", "zone_name": "yu-zora.com" },
+    { "pattern": "yu-zora.com/tools/kyou-nani-taberu/*", "zone_name": "yu-zora.com" }
   ]
 }
