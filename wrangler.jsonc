@@ -1,0 +1,14 @@
+{
+  "name": "kyou-nani-taberu",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-08-25",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "routes": [
+    { "pattern": "yu-zora.com/games/kyou-nani-taberu", "zone_name": "yu-zora.com" },
+    { "pattern": "yu-zora.com/games/kyou-nani-taberu/*", "zone_name": "yu-zora.com" }
+  ]
+}

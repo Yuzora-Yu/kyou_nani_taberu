@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#ff7043" />
+  <title>きょう、なに食べる？ なに飲む？</title>
+  <style>
+    :root {
+      --bg: #fffaf4;
+      --surface: rgba(255, 255, 255, 0.9);
+      --text: #2e241f;
+      --muted: #76655d;
+      --line: #eaded6;
+      --accent: #ff6b3d;
+      --accent-2: #ffb43b;
+      --accent-dark: #d94a20;
+      --drink-accent: #7b5cff;
+      --drink-dark: #5035c7;
+      --shadow: 0 18px 50px rgba(72, 42, 28, 0.12);
+      --radius: 24px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 3%, rgba(255, 190, 118, .24), transparent 28rem),
+        radial-gradient(circle at 90% 12%, rgba(255, 108, 77, .16), transparent 30rem),
+        linear-gradient(180deg, #fffaf4 0%, #fffdf9 55%, #fff8ef 100%);
+      font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+      line-height: 1.6;
+      transition: background .25s ease;
+    }
+    body.drink-mode {
+      background:
+        radial-gradient(circle at 12% 3%, rgba(167, 142, 255, .22), transparent 28rem),
+        radial-gradient(circle at 90% 12%, rgba(255, 120, 174, .15), transparent 30rem),
+        linear-gradient(180deg, #fbf8ff 0%, #fffdfd 55%, #f8f5ff 100%);
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; }
+    [hidden] { display: none !important; }
+    .shell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+
+    .hero { position: relative; overflow: hidden; padding: 58px 0 34px; }
+    .hero::before, .hero::after { content: ""; position: absolute; border-radius: 999px; pointer-events: none; }
+    .hero::before { width: 220px; height: 220px; background: rgba(255, 180, 59, .18); top: -70px; left: -70px; }
+    .hero::after { width: 180px; height: 180px; background: rgba(255, 107, 61, .13); right: -40px; bottom: 8px; }
+    .drink-mode .hero::before { background: rgba(123,92,255,.15); }
+    .drink-mode .hero::after { background: rgba(255,120,174,.14); }
+    .hero-grid { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr); gap: 34px; align-items: center; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border: 1px solid rgba(255, 107, 61, .22); border-radius: 999px; color: var(--accent-dark); background: rgba(255, 255, 255, .72); font-weight: 700; font-size: 14px; letter-spacing: .04em; }
+    .drink-mode .eyebrow { color: var(--drink-dark); border-color: rgba(123,92,255,.24); }
+    h1 { margin: 16px 0 14px; font-size: clamp(42px, 7vw, 82px); line-height: 1.05; letter-spacing: -.045em; }
+    .hero-copy { margin: 0; max-width: 690px; color: var(--muted); font-size: clamp(16px, 2vw, 20px); }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; }
+    .primary, .secondary { border: 0; border-radius: 999px; min-height: 54px; padding: 0 23px; font-weight: 800; transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
+    .primary { color: white; background: linear-gradient(135deg, var(--accent), #ff8d37); box-shadow: 0 12px 28px rgba(255, 107, 61, .3); }
+    .drink-mode .primary, .drink-mode .floating-random { background: linear-gradient(135deg, var(--drink-accent), #a95cff); box-shadow: 0 12px 28px rgba(123,92,255,.28); }
+    .primary:hover { transform: translateY(-2px); box-shadow: 0 16px 34px rgba(255, 107, 61, .36); }
+    .primary:active { transform: translateY(0) scale(.98); }
+    .secondary { color: var(--text); background: rgba(255,255,255,.82); border: 1px solid var(--line); }
+    .secondary:hover { transform: translateY(-2px); background: #fff; }
+    .hero-visual { position: relative; min-height: 330px; display: grid; place-items: center; }
+    .plate { width: min(320px, 84vw); aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at center, #fff 0 52%, #f8efe7 53% 58%, #fff 59% 66%, #eee1d7 67% 69%, #fff 70%); box-shadow: 0 24px 54px rgba(71, 42, 28, .18); transform: rotate(-6deg); }
+    .drink-mode .plate { background: radial-gradient(circle at center, #fff 0 52%, #eee9ff 53% 58%, #fff 59% 66%, #e2dcf6 67% 69%, #fff 70%); }
+    .plate-center { font-size: 106px; filter: drop-shadow(0 10px 12px rgba(80, 45, 25, .14)); animation: float 3.4s ease-in-out infinite; }
+    .float-chip { position: absolute; display: grid; place-items: center; width: 74px; height: 74px; border-radius: 22px; background: rgba(255,255,255,.9); border: 1px solid rgba(255,255,255,.9); box-shadow: 0 14px 35px rgba(74, 46, 31, .14); font-size: 39px; backdrop-filter: blur(8px); }
+    .chip-a { top: 10px; left: 4px; transform: rotate(-8deg); }
+    .chip-b { right: 0; top: 58px; transform: rotate(8deg); }
+    .chip-c { left: 22px; bottom: 12px; transform: rotate(7deg); }
+    @keyframes float { 0%, 100% { transform: translateY(0) rotate(5deg); } 50% { transform: translateY(-10px) rotate(-2deg); } }
+
+    .toolbar-wrap { position: sticky; top: 0; z-index: 20; padding: 10px 0; background: linear-gradient(180deg, rgba(255,250,244,.98), rgba(255,250,244,.9)); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(234,222,214,.7); }
+    .drink-mode .toolbar-wrap { background: linear-gradient(180deg, rgba(251,248,255,.98), rgba(251,248,255,.9)); }
+    .mode-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 5px; margin-bottom: 10px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.75); }
+    .mode-tab { min-height: 46px; border: 0; border-radius: 999px; color: var(--muted); background: transparent; font-weight: 900; transition: .18s ease; }
+    .mode-tab[aria-selected="true"] { color: #fff; background: var(--text); box-shadow: 0 8px 18px rgba(46,36,31,.16); }
+    .mode-tab:hover { color: var(--text); }
+    .controls { display: grid; grid-template-columns: minmax(240px, 1fr) auto; gap: 14px; align-items: center; }
+    .search { position: relative; }
+    .search input { width: 100%; height: 48px; padding: 0 18px 0 45px; border: 1px solid var(--line); border-radius: 999px; color: var(--text); background: rgba(255,255,255,.9); outline: none; box-shadow: 0 8px 24px rgba(72,42,28,.05); }
+    .search input:focus { border-color: rgba(255,107,61,.55); box-shadow: 0 0 0 4px rgba(255,107,61,.12); }
+    .drink-mode .search input:focus { border-color: rgba(123,92,255,.55); box-shadow: 0 0 0 4px rgba(123,92,255,.12); }
+    .search span { position: absolute; left: 17px; top: 50%; transform: translateY(-50%); font-size: 18px; pointer-events: none; }
+    .filter-row { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px 0; }
+    .filter-row::-webkit-scrollbar { display: none; }
+    .filter { flex: 0 0 auto; min-height: 42px; padding: 0 15px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); background: rgba(255,255,255,.82); font-weight: 800; font-size: 14px; transition: .18s ease; }
+    .filter:hover { border-color: rgba(255,107,61,.35); color: var(--text); }
+    .filter.active { color: #fff; border-color: transparent; background: var(--text); }
+
+    main { padding: 30px 0 72px; }
+    .list-head { display: flex; align-items: end; justify-content: space-between; gap: 14px; margin-bottom: 17px; }
+    .list-head h2 { margin: 0; font-size: clamp(25px, 3vw, 36px); letter-spacing: -.03em; }
+    .list-note { margin: 5px 0 0; color: var(--muted); font-size: 14px; }
+    .count { color: var(--muted); font-weight: 700; font-size: 14px; white-space: nowrap; }
+    .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+    .choice-card { position: relative; overflow: hidden; display: flex; flex-direction: column; min-height: 292px; border: 1px solid rgba(234,222,214,.86); border-radius: var(--radius); background: var(--surface); box-shadow: 0 8px 28px rgba(72,42,28,.07); transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; cursor: pointer; outline: none; }
+    .choice-card:hover, .choice-card:focus-visible { transform: translateY(-5px); box-shadow: var(--shadow); border-color: rgba(255,107,61,.28); }
+    .drink-mode .choice-card:hover, .drink-mode .choice-card:focus-visible { border-color: rgba(123,92,255,.3); }
+    .choice-card:focus-visible { box-shadow: 0 0 0 4px rgba(255,107,61,.16), var(--shadow); }
+    .art { position: relative; height: 154px; display: grid; place-items: center; overflow: hidden; background: linear-gradient(135deg, var(--card-a), var(--card-b)); }
+    .art::before { content: ""; position: absolute; width: 116px; height: 116px; border-radius: 50%; background: rgba(255,255,255,.58); box-shadow: 0 0 0 16px rgba(255,255,255,.18); }
+    .art img { position: relative; z-index: 1; width: 106px; height: 106px; object-fit: contain; filter: drop-shadow(0 10px 10px rgba(70,40,20,.14)); transition: transform .22s ease; }
+    .choice-card:hover .art img { transform: scale(1.08) rotate(-3deg); }
+    .emoji-fallback { position: relative; z-index: 1; display: none; font-size: 78px; filter: drop-shadow(0 8px 10px rgba(70,40,20,.14)); }
+    .card-body { padding: 17px 18px 18px; }
+    .card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .choice-card h3 { margin: 0; font-size: 21px; letter-spacing: -.025em; }
+    .badge { flex: 0 0 auto; padding: 4px 8px; border-radius: 999px; background: #fff4eb; color: #a34622; font-size: 11px; font-weight: 800; }
+    .drink-mode .badge { color: #5138b3; background: #f0ecff; }
+    .choice-card p { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+    .tag { padding: 3px 8px; border-radius: 999px; background: rgba(46,36,31,.055); color: #6e5b51; font-size: 11px; font-weight: 700; }
+    .empty { display: none; padding: 60px 20px; text-align: center; border: 1px dashed var(--line); border-radius: var(--radius); color: var(--muted); background: rgba(255,255,255,.58); }
+    .responsible-note { margin-top: 24px; padding: 15px 18px; border: 1px solid #e3dcff; border-radius: 16px; color: #625978; background: rgba(247,244,255,.78); font-size: 13px; }
+
+    .floating-random { position: fixed; z-index: 30; right: 20px; bottom: 20px; min-height: 58px; padding: 0 22px; border: 0; border-radius: 999px; color: white; background: linear-gradient(135deg, var(--accent), #ff9f37); font-weight: 900; box-shadow: 0 16px 35px rgba(255,107,61,.36); transition: transform .18s ease; }
+    .floating-random:hover { transform: translateY(-3px) scale(1.02); }
+
+    .modal { position: fixed; inset: 0; z-index: 100; display: none; place-items: center; padding: 20px; background: rgba(38, 26, 20, .54); backdrop-filter: blur(9px); overflow-y: auto; }
+    .modal.open { display: grid; animation: fade .16s ease both; }
+    .dialog { width: min(620px, 100%); overflow: hidden; border-radius: 32px; background: #fff; box-shadow: 0 28px 90px rgba(33,20,14,.32); animation: pop .24s cubic-bezier(.2,.9,.3,1.15) both; }
+    .result-art { min-height: 220px; display: grid; place-items: center; position: relative; background: linear-gradient(135deg, var(--result-a, #ffe1c7), var(--result-b, #ffd2bd)); }
+    .result-art::before { content: ""; position: absolute; width: 160px; height: 160px; border-radius: 50%; background: rgba(255,255,255,.62); box-shadow: 0 0 0 22px rgba(255,255,255,.17); }
+    .result-art img { position: relative; z-index: 1; width: 140px; height: 140px; object-fit: contain; filter: drop-shadow(0 14px 14px rgba(70,40,20,.16)); }
+    .result-art .emoji-fallback { font-size: 108px; }
+    .spark { position: absolute; font-size: 29px; animation: twinkle 1.3s ease-in-out infinite alternate; }
+    .s1 { top: 28px; left: 54px; } .s2 { top: 48px; right: 56px; animation-delay: .35s; } .s3 { bottom: 30px; right: 94px; animation-delay: .65s; }
+    .result-body { padding: 22px 27px 27px; text-align: center; }
+    .result-label { color: var(--accent-dark); font-size: 13px; font-weight: 900; letter-spacing: .08em; }
+    .drink-result .result-label { color: var(--drink-dark); }
+    .result-body h2 { margin: 5px 0 7px; font-size: clamp(30px, 7vw, 46px); line-height: 1.2; letter-spacing: -.04em; }
+    .result-body > p { margin: 0; color: var(--muted); }
+    .pairing-area { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line); text-align: left; }
+    .pairing-area h3 { margin: 0 0 11px; text-align: center; font-size: 17px; }
+    .pairing-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+    .pairing-card { padding: 12px; border: 1px solid var(--line); border-radius: 17px; background: #fffaf7; }
+    .pairing-name { display: flex; align-items: center; gap: 7px; font-weight: 900; }
+    .pairing-name span { font-size: 24px; }
+    .pairing-card p { margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .result-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+    .result-actions button { min-height: 50px; border-radius: 999px; font-weight: 900; }
+    .close-btn { border: 1px solid var(--line); color: var(--text); background: #fff; }
+    .again-btn { border: 0; color: #fff; background: var(--text); }
+
+    footer { padding: 28px 0 88px; color: var(--muted); font-size: 12px; }
+    .credit { padding: 18px 20px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,.62); }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes pop { from { opacity: 0; transform: translateY(12px) scale(.94); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes twinkle { from { transform: scale(.82) rotate(-8deg); opacity: .55; } to { transform: scale(1.12) rotate(7deg); opacity: 1; } }
+
+    @media (max-width: 980px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .hero-visual { min-height: 280px; margin-top: -10px; }
+      .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .controls { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 720px) {
+      .shell { width: min(100% - 22px, 1180px); }
+      .hero { padding-top: 38px; }
+      .hero-actions { display: grid; grid-template-columns: 1fr; }
+      .hero-actions button { width: 100%; }
+      .hero-visual { min-height: 250px; }
+      .plate { width: 245px; }
+      .plate-center { font-size: 80px; }
+      .float-chip { width: 61px; height: 61px; font-size: 31px; border-radius: 18px; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+      .choice-card { min-height: 255px; border-radius: 20px; }
+      .art { height: 125px; }
+      .art img { width: 87px; height: 87px; }
+      .art::before { width: 92px; height: 92px; }
+      .card-body { padding: 14px; }
+      .choice-card h3 { font-size: 18px; }
+      .choice-card p { font-size: 12px; }
+      .badge { display: none; }
+      .tags { display: none; }
+      .floating-random { right: 12px; bottom: 12px; min-height: 54px; padding: 0 18px; }
+      .pairing-list { grid-template-columns: 1fr; }
+      .dialog { margin: auto 0; }
+      .result-art { min-height: 190px; }
+      .result-art img { width: 118px; height: 118px; }
+    }
+    @media (max-width: 390px) {
+      .grid { grid-template-columns: 1fr; }
+      .choice-card { min-height: 0; display: grid; grid-template-columns: 118px 1fr; }
+      .art { height: 100%; min-height: 145px; }
+      .card-body { align-self: center; }
+      .mode-tab { font-size: 14px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="shell hero-grid">
+      <div>
+        <div class="eyebrow" id="heroEyebrow">🍽️ 迷った日のごはんカタログ</div>
+        <h1>きょう、<br><span id="heroQuestion">なに食べる？</span></h1>
+        <p class="hero-copy" id="heroCopy">定番からちょっと変わり種まで、ずらっと一覧にしました。眺めて選ぶもよし、運にまかせるもよし。</p>
+        <div class="hero-actions">
+          <button class="primary" type="button" data-random>🎲 ランダムで決める</button>
+          <button class="secondary" type="button" id="scrollButton">一覧から眺める ↓</button>
+        </div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="plate"><div class="plate-center" id="plateCenter">🍽️</div></div>
+        <div class="float-chip chip-a" id="chipA">🍣</div>
+        <div class="float-chip chip-b" id="chipB">🍕</div>
+        <div class="float-chip chip-c" id="chipC">🥟</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="toolbar-wrap" id="catalog">
+    <div class="shell">
+      <div class="mode-tabs" role="tablist" aria-label="選ぶものを切り替え">
+        <button class="mode-tab" id="foodTab" type="button" role="tab" aria-selected="true" aria-controls="foodPanel" data-mode="food">🍽️ ごはんを選ぶ</button>
+        <button class="mode-tab" id="drinkTab" type="button" role="tab" aria-selected="false" aria-controls="drinkPanel" data-mode="drink">🍷 お酒を選ぶ</button>
+      </div>
+      <div class="controls" id="foodControls">
+        <label class="search"><span>🔎</span><input id="foodSearch" type="search" placeholder="料理名や気分で検索（例：さっぱり、麺、肉）" autocomplete="off" /></label>
+        <div class="filter-row" id="foodFilters" aria-label="料理ジャンル絞り込み">
+          <button class="filter active" type="button" data-filter="all">全部</button>
+          <button class="filter" type="button" data-filter="japanese">和食</button>
+          <button class="filter" type="button" data-filter="western">洋食</button>
+          <button class="filter" type="button" data-filter="asian">中華・アジア</button>
+          <button class="filter" type="button" data-filter="meat">肉</button>
+          <button class="filter" type="button" data-filter="seafood">魚介</button>
+          <button class="filter" type="button" data-filter="noodle">麺</button>
+          <button class="filter" type="button" data-filter="rice">ごはん</button>
+          <button class="filter" type="button" data-filter="light">軽め</button>
+          <button class="filter" type="button" data-filter="spicy">辛い</button>
+          <button class="filter" type="button" data-filter="sweet">甘いもの</button>
+        </div>
+      </div>
+      <div class="controls" id="drinkControls" hidden>
+        <label class="search"><span>🔎</span><input id="drinkSearch" type="search" placeholder="お酒名や気分で検索（例：爽快、甘い、ワイン）" autocomplete="off" /></label>
+        <div class="filter-row" id="drinkFilters" aria-label="お酒ジャンル絞り込み">
+          <button class="filter active" type="button" data-filter="all">全部</button>
+          <button class="filter" type="button" data-filter="beer">ビール</button>
+          <button class="filter" type="button" data-filter="sour">サワー</button>
+          <button class="filter" type="button" data-filter="wine">ワイン</button>
+          <button class="filter" type="button" data-filter="japanese">日本酒・焼酎</button>
+          <button class="filter" type="button" data-filter="spirits">蒸留酒</button>
+          <button class="filter" type="button" data-filter="cocktail">カクテル</button>
+          <button class="filter" type="button" data-filter="sweet">甘め</button>
+          <button class="filter" type="button" data-filter="light">軽やか</button>
+          <button class="filter" type="button" data-filter="nonal">ノンアル</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main class="shell" id="foodPanel" role="tabpanel" aria-labelledby="foodTab">
+    <div class="list-head">
+      <div><h2>食べたいもの一覧</h2><p class="list-note">料理名を選ぶと、そのまま今日の候補として大きく表示します。</p></div>
+      <div class="count" id="foodCount">0種類表示中</div>
+    </div>
+    <section class="grid" id="foodGrid" aria-live="polite"></section>
+    <div class="empty" id="foodEmpty">見つかりませんでした。検索ワードや絞り込みを変えてみてね。</div>
+  </main>
+
+  <main class="shell" id="drinkPanel" role="tabpanel" aria-labelledby="drinkTab" hidden>
+    <div class="list-head">
+      <div><h2>飲みたいお酒一覧</h2><p class="list-note">お酒を選ぶと、相性の良いごはんを3種類提案します。</p></div>
+      <div class="count" id="drinkCount">0種類表示中</div>
+    </div>
+    <section class="grid" id="drinkGrid" aria-live="polite"></section>
+    <div class="empty" id="drinkEmpty">見つかりませんでした。検索ワードや絞り込みを変えてみてね。</div>
+    <div class="responsible-note">お酒は無理のない量で楽しみましょう。運転予定がある日はノンアルコールを選んでください。</div>
+  </main>
+
+  <button class="floating-random" type="button" data-random aria-label="表示中の候補からランダムで選ぶ">🎲 おまかせ</button>
+
+  <div class="modal" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <div class="dialog" id="resultDialog">
+      <div class="result-art" id="resultArt">
+        <span class="spark s1">✨</span><span class="spark s2">✨</span><span class="spark s3">✨</span>
+        <img id="resultImage" alt="" />
+        <span class="emoji-fallback" id="resultFallback" aria-hidden="true"></span>
+      </div>
+      <div class="result-body">
+        <div class="result-label" id="resultLabel">TODAY'S PICK</div>
+        <h2 id="resultTitle">これにしよう！</h2>
+        <p id="resultDescription"></p>
+        <div class="pairing-area" id="pairingArea" hidden>
+          <h3>このお酒に合わせたいごはん 3選</h3>
+          <div class="pairing-list" id="pairingList"></div>
+        </div>
+        <div class="result-actions">
+          <button class="close-btn" type="button" id="closeModal">これにする！</button>
+          <button class="again-btn" type="button" id="againButton">🎲 もう一回</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="shell">
+    <div class="credit">画像素材：<a href="https://openmoji.org/" target="_blank" rel="noopener">OpenMoji</a> ／ <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ja" target="_blank" rel="noopener">CC BY-SA 4.0</a></div>
+  </footer>
+
+  <script>
+    const foods = [{"name":"お寿司","emoji":"🍣","imageCode":"1F363","category":["japanese","seafood","light"],"badge":"和食","desc":"握り、回転寿司、ちらし寿司。ちょっと良いものを食べたい日に。","tags":["さっぱり","魚","ごほうび"]},{"name":"焼肉","emoji":"🥩","imageCode":"1F969","category":["meat","asian"],"badge":"肉","desc":"香ばしく焼いたお肉を白ごはんと一緒に。","tags":["こってり","みんなで","元気"]},{"name":"中華料理","emoji":"🥟","imageCode":"1F95F","category":["asian"],"badge":"中華","desc":"餃子、麻婆豆腐、炒飯。いろいろ頼んでシェアも楽しい。","tags":["熱々","シェア","しっかり"]},{"name":"ラーメン","emoji":"🍜","imageCode":"1F35C","category":["asian","noodle"],"badge":"麺","desc":"醤油、味噌、塩、とんこつ。今の気分はどの一杯？","tags":["温かい","こってり","ひとり"]},{"name":"パスタ","emoji":"🍝","imageCode":"1F35D","category":["western","noodle"],"badge":"洋食","desc":"トマト、クリーム、オイル。ソースで気分が変わる定番。","tags":["おしゃれ","麺","満足"]},{"name":"ピザ","emoji":"🍕","imageCode":"1F355","category":["western"],"badge":"洋食","desc":"チーズたっぷり。宅配でもお店でも、みんなで楽しい。","tags":["チーズ","シェア","ごほうび"]},{"name":"お好み焼き","emoji":"🥞","imageCode":"1F95E","category":["japanese"],"badge":"粉もの","desc":"ソースとマヨネーズの香りで食欲スイッチON。","tags":["熱々","ソース","鉄板"]},{"name":"カレー","emoji":"🍛","imageCode":"1F35B","category":["japanese","asian","spicy","rice"],"badge":"定番","desc":"家カレー、欧風、スパイス系。迷ったら頼れる一皿。","tags":["スパイシー","ごはん","満足"]},{"name":"ハンバーガー","emoji":"🍔","imageCode":"1F354","category":["western","meat"],"badge":"カジュアル","desc":"がぶっと豪快に。ポテトとドリンクも付けたくなる。","tags":["手軽","肉","ジャンク"]},{"name":"うどん","emoji":"🍜","imageCode":"1F35C","category":["japanese","noodle","light"],"badge":"和麺","desc":"温かくても冷たくても。体調や季節に合わせやすい。","tags":["やさしい","麺","だし"]},{"name":"そば","emoji":"🍜","imageCode":"1F35C","category":["japanese","noodle","light"],"badge":"和麺","desc":"ざる、かけ、天そば。さっぱり食べたい日に。","tags":["さっぱり","麺","和食"]},{"name":"天ぷら","emoji":"🍤","imageCode":"1F364","category":["japanese","seafood"],"badge":"和食","desc":"揚げたてサクサク。天丼や天そばにしても大満足。","tags":["サクサク","魚介","ごほうび"]},{"name":"牛丼","emoji":"🍚","imageCode":"1F35A","category":["japanese","meat","rice"],"badge":"丼","desc":"早い、うまい、しっかり満腹。卵や紅しょうがも忘れずに。","tags":["手軽","ごはん","満腹"]},{"name":"親子丼","emoji":"🍚","imageCode":"1F35A","category":["japanese","meat","rice"],"badge":"丼","desc":"鶏肉と卵のやさしい味。ほっと落ち着く丼もの。","tags":["卵","ごはん","やさしい"]},{"name":"海鮮丼","emoji":"🍣","imageCode":"1F363","category":["japanese","seafood","rice","light"],"badge":"丼","desc":"好きな魚介を一度に。見た目も華やかなごほうびごはん。","tags":["魚","さっぱり","ごほうび"]},{"name":"定食","emoji":"🍱","imageCode":"1F371","category":["japanese","rice"],"badge":"バランス","desc":"主菜、ごはん、味噌汁、小鉢。落ち着く組み合わせ。","tags":["バランス","普段使い","しっかり"]},{"name":"焼き鳥","emoji":"🍗","imageCode":"1F357","category":["japanese","meat"],"badge":"居酒屋","desc":"塩かタレか。一本ずつ好きな部位を選べる楽しさ。","tags":["香ばしい","肉","ちょい飲み"]},{"name":"刺身","emoji":"🐟","imageCode":"1F41F","category":["japanese","seafood","light"],"badge":"魚","desc":"旬の魚をシンプルに。日本酒にも白ごはんにも。","tags":["さっぱり","魚","和食"]},{"name":"焼き魚","emoji":"🐟","imageCode":"1F41F","category":["japanese","seafood","light"],"badge":"魚","desc":"鮭、さば、ほっけ。香ばしい皮までおいしい。","tags":["魚","定食","やさしい"]},{"name":"鍋料理","emoji":"🍲","imageCode":"1F372","category":["japanese","asian","light"],"badge":"あったか","desc":"寄せ鍋、キムチ鍋、豆乳鍋。野菜もたっぷり。","tags":["温かい","みんなで","野菜"]},{"name":"しゃぶしゃぶ","emoji":"🫕","imageCode":"1FAD5","category":["japanese","meat","light"],"badge":"ごほうび","desc":"薄切り肉と野菜をさっと。タレ選びも楽しい。","tags":["肉","野菜","みんなで"]},{"name":"すき焼き","emoji":"🫕","imageCode":"1FAD5","category":["japanese","meat"],"badge":"ごほうび","desc":"甘辛い割り下と卵で楽しむ、特別感のある鍋。","tags":["甘辛","肉","みんなで"]},{"name":"ステーキ","emoji":"🥩","imageCode":"1F969","category":["western","meat"],"badge":"肉","desc":"今日は肉！という気分を一発で満たす主役メニュー。","tags":["ごほうび","肉","満腹"]},{"name":"ハンバーグ","emoji":"🍽️","imageCode":"1F37D","category":["western","meat"],"badge":"洋食","desc":"デミグラス、和風おろし、チーズ。大人も子どもも好き。","tags":["肉","定番","ごはん"]},{"name":"オムライス","emoji":"🍳","imageCode":"1F373","category":["western","rice"],"badge":"洋食","desc":"ふわとろ卵とケチャップライス。ほっとする味。","tags":["卵","やさしい","カフェ"]},{"name":"グラタン","emoji":"🧀","imageCode":"1F9C0","category":["western"],"badge":"洋食","desc":"熱々クリーミー。チーズの焼き目までおいしい。","tags":["チーズ","温かい","こってり"]},{"name":"ドリア","emoji":"🧀","imageCode":"1F9C0","category":["western","rice"],"badge":"洋食","desc":"ごはんにホワイトソースとチーズ。満足感たっぷり。","tags":["チーズ","ごはん","熱々"]},{"name":"サンドイッチ","emoji":"🥪","imageCode":"1F96A","category":["western","light"],"badge":"軽食","desc":"軽めの日も、具だくさんならしっかり満足。","tags":["手軽","パン","軽め"]},{"name":"サラダ・デリ","emoji":"🥗","imageCode":"1F957","category":["western","light"],"badge":"軽め","desc":"野菜中心でリセット。スープやパンを足しても◎。","tags":["野菜","さっぱり","ヘルシー"]},{"name":"韓国料理","emoji":"🍲","imageCode":"1F372","category":["asian","meat","spicy"],"badge":"韓国","desc":"サムギョプサル、ビビンバ、スンドゥブ。辛旨で元気。","tags":["辛い","熱々","肉"]},{"name":"タイ料理","emoji":"🥣","imageCode":"1F963","category":["asian","noodle","spicy"],"badge":"タイ","desc":"ガパオ、カオマンガイ、トムヤム。香りで旅気分。","tags":["エスニック","辛い","香り"]},{"name":"ベトナム料理","emoji":"🍜","imageCode":"1F35C","category":["asian","noodle","light"],"badge":"ベトナム","desc":"フォーや生春巻き。ハーブ香るさっぱり系。","tags":["さっぱり","麺","ハーブ"]},{"name":"インド料理","emoji":"🍛","imageCode":"1F35B","category":["asian","spicy"],"badge":"インド","desc":"スパイスカレーと焼きたてナン。香りもごちそう。","tags":["スパイス","辛い","満足"]},{"name":"メキシカン","emoji":"🌮","imageCode":"1F32E","category":["western","meat","spicy"],"badge":"メキシコ","desc":"タコスやブリトー。具を選んでにぎやかに。","tags":["スパイシー","手軽","シェア"]},{"name":"たこ焼き","emoji":"🐙","imageCode":"1F419","category":["japanese","seafood"],"badge":"粉もの","desc":"外はカリッ、中はとろっ。小腹にもパーティーにも。","tags":["熱々","ソース","シェア"]},{"name":"パン・ベーカリー","emoji":"🥐","imageCode":"1F950","category":["western","light"],"badge":"パン","desc":"クロワッサン、惣菜パン、焼きたてパン。香りで選ぼう。","tags":["手軽","朝昼","軽め"]},{"name":"カフェごはん","emoji":"☕","imageCode":"2615","category":["western","light"],"badge":"カフェ","desc":"プレートごはんやキッシュ。ゆっくり過ごしたい日に。","tags":["おしゃれ","軽め","ゆっくり"]},{"name":"スイーツ","emoji":"🍰","imageCode":"1F370","category":["sweet"],"badge":"甘い","desc":"ケーキ、パフェ、クレープ。今日は甘いものを主役に。","tags":["ごほうび","甘い","カフェ"]},{"name":"アイス・かき氷","emoji":"🍨","imageCode":"1F368","category":["sweet","light"],"badge":"冷たい","desc":"食後にもおやつにも。暑い日は迷わずこれ。","tags":["冷たい","甘い","さっぱり"]},{"name":"おでん","emoji":"🍢","imageCode":"1F362","category":["japanese","light"],"badge":"和食","desc":"だし染み大根、卵、練り物。ほっと温まりたい日に。","tags":["温かい","やさしい","軽め"]},{"name":"ファミレス","emoji":"🍽️","imageCode":"1F37D","category":["western","japanese","meat"],"badge":"万能","desc":"和洋中なんでもあるから、みんなの気分が違っても安心。","tags":["選べる","みんなで","定番"]},{"name":"コンビニ・テイクアウト","emoji":"🍙","imageCode":"1F359","category":["japanese","light"],"badge":"時短","desc":"今日は頑張らない。好きなものを少しずつ選ぶ日。","tags":["手軽","早い","ひとり"]},{"name":"とんかつ","emoji":"🍖","imageCode":"1F356","category":["japanese","meat","rice"],"badge":"揚げもの","desc":"サクサク衣とジューシーな豚肉。キャベツもたっぷり。","tags":["サクサク","肉","満腹"]},{"name":"唐揚げ","emoji":"🍗","imageCode":"1F357","category":["japanese","meat"],"badge":"揚げもの","desc":"外カリ、中ジュワ。ごはんにもお酒にも合う万能選手。","tags":["香ばしい","肉","定番"]},{"name":"生姜焼き","emoji":"🍖","imageCode":"1F356","category":["japanese","meat","rice"],"badge":"定食","desc":"甘辛いタレと生姜の香りで白ごはんが進む。","tags":["ごはん","肉","定番"]},{"name":"豚の角煮","emoji":"🍖","imageCode":"1F356","category":["japanese","meat"],"badge":"煮込み","desc":"ほろほろの豚肉に味がしみた、濃厚な一皿。","tags":["こってり","肉","おつまみ"]},{"name":"もつ鍋","emoji":"🍲","imageCode":"1F372","category":["japanese","meat","spicy"],"badge":"鍋","desc":"ぷりぷりのもつと野菜を、にんにくの効いたスープで。","tags":["温かい","肉","みんなで"]},{"name":"餃子","emoji":"🥟","imageCode":"1F95F","category":["asian","meat"],"badge":"中華","desc":"焼き、蒸し、水餃子。ビールも白ごはんも欲しくなる。","tags":["熱々","シェア","香ばしい"]},{"name":"麻婆豆腐","emoji":"🌶️","imageCode":"1F336","category":["asian","spicy","rice"],"badge":"中華","desc":"しびれる辛さと旨み。白ごはんと一緒にどうぞ。","tags":["辛い","ごはん","熱々"]},{"name":"チャーハン","emoji":"🍚","imageCode":"1F35A","category":["asian","rice"],"badge":"中華","desc":"パラパラ香ばしい。スープや餃子を足しても。","tags":["ごはん","手軽","香ばしい"]},{"name":"小籠包","emoji":"🥟","imageCode":"1F95F","category":["asian","meat"],"badge":"点心","desc":"薄い皮の中に熱々スープ。やけどに注意してひと口。","tags":["熱々","シェア","点心"]},{"name":"春巻き","emoji":"🥟","imageCode":"1F95F","category":["asian"],"badge":"中華","desc":"パリパリの皮と具材の食感が楽しい揚げ点心。","tags":["サクサク","おつまみ","シェア"]},{"name":"担々麺","emoji":"🍜","imageCode":"1F35C","category":["asian","noodle","spicy"],"badge":"麺","desc":"ごまのコクと辛さがくせになる濃厚な一杯。","tags":["辛い","麺","こってり"]},{"name":"つけ麺","emoji":"🍜","imageCode":"1F35C","category":["asian","noodle"],"badge":"麺","desc":"濃厚なつけ汁に太麺をからめて、しっかり満腹。","tags":["麺","濃厚","満腹"]},{"name":"焼きそば","emoji":"🍝","imageCode":"1F35D","category":["japanese","noodle"],"badge":"麺","desc":"ソースの香りが食欲をそそる、気軽な鉄板メニュー。","tags":["ソース","麺","手軽"]},{"name":"フォー","emoji":"🍜","imageCode":"1F35C","category":["asian","noodle","light"],"badge":"ベトナム","desc":"米麺と澄んだスープ。ハーブを足してさっぱりと。","tags":["さっぱり","麺","ハーブ"]},{"name":"ナポリタン","emoji":"🍝","imageCode":"1F35D","category":["western","noodle"],"badge":"喫茶店","desc":"ケチャップ味が懐かしい、昔ながらの喫茶店パスタ。","tags":["麺","懐かしい","洋食"]},{"name":"カルボナーラ","emoji":"🍝","imageCode":"1F35D","category":["western","noodle"],"badge":"パスタ","desc":"卵とチーズの濃厚ソース。黒こしょうをたっぷりと。","tags":["濃厚","チーズ","麺"]},{"name":"ペペロンチーノ","emoji":"🍝","imageCode":"1F35D","category":["western","noodle","spicy"],"badge":"パスタ","desc":"にんにくと唐辛子の香りが主役のシンプルパスタ。","tags":["にんにく","辛い","麺"]},{"name":"リゾット","emoji":"🥘","imageCode":"1F958","category":["western","rice"],"badge":"イタリアン","desc":"米の食感を残して仕上げる、やさしく濃厚な一皿。","tags":["ごはん","チーズ","温かい"]},{"name":"パエリア","emoji":"🥘","imageCode":"1F958","category":["western","seafood","rice"],"badge":"スペイン","desc":"魚介の旨みを吸ったごはんを、みんなで囲もう。","tags":["魚介","ごはん","シェア"]},{"name":"アヒージョ","emoji":"🫕","imageCode":"1FAD5","category":["western","seafood"],"badge":"スペイン","desc":"にんにく香るオイル煮。パンを浸して最後まで。","tags":["にんにく","魚介","おつまみ"]},{"name":"ビストロ料理","emoji":"🍽️","imageCode":"1F37D","category":["western","meat"],"badge":"フレンチ","desc":"煮込みやパテを気軽に。ワインを合わせたくなる夜。","tags":["おしゃれ","ごほうび","ワイン"]},{"name":"ローストビーフ","emoji":"🥩","imageCode":"1F969","category":["western","meat"],"badge":"肉","desc":"しっとり赤身肉を薄切りで。ソースや薬味で楽しむ。","tags":["肉","ごほうび","おつまみ"]},{"name":"ビーフシチュー","emoji":"🥘","imageCode":"1F958","category":["western","meat"],"badge":"煮込み","desc":"ほろほろ牛肉と濃厚なソース。パンにもごはんにも。","tags":["温かい","濃厚","肉"]},{"name":"ポトフ","emoji":"🍲","imageCode":"1F372","category":["western","light"],"badge":"煮込み","desc":"野菜とソーセージをやさしいスープで煮込んだ一皿。","tags":["野菜","温かい","やさしい"]},{"name":"ソーセージ","emoji":"🌭","imageCode":"1F32D","category":["western","meat"],"badge":"肉","desc":"パリッとジューシー。ビールと合わせたくなる定番。","tags":["肉","おつまみ","香ばしい"]},{"name":"BBQ","emoji":"🍖","imageCode":"1F356","category":["western","meat"],"badge":"アウトドア","desc":"肉も野菜も豪快に焼いて、にぎやかに楽しもう。","tags":["みんなで","肉","香ばしい"]},{"name":"ホットドッグ","emoji":"🌭","imageCode":"1F32D","category":["western","meat"],"badge":"カジュアル","desc":"ソーセージをパンにはさんだ、片手で楽しめる軽食。","tags":["手軽","パン","肉"]},{"name":"フライドチキン","emoji":"🍗","imageCode":"1F357","category":["western","meat"],"badge":"揚げもの","desc":"スパイスの効いた衣とジューシーな鶏肉。","tags":["サクサク","肉","パーティー"]},{"name":"フィッシュ＆チップス","emoji":"🍟","imageCode":"1F35F","category":["western","seafood"],"badge":"英国","desc":"白身魚のフライとポテト。ビールのお供にもぴったり。","tags":["サクサク","魚","おつまみ"]},{"name":"エビフライ","emoji":"🍤","imageCode":"1F364","category":["western","seafood"],"badge":"揚げもの","desc":"ぷりっとした海老にサクサク衣。タルタルを添えて。","tags":["サクサク","魚介","定食"]},{"name":"カキフライ","emoji":"🦪","imageCode":"1F9AA","category":["western","seafood"],"badge":"揚げもの","desc":"濃厚な牡蠣をサクッと。レモンかソースかタルタルか。","tags":["魚介","サクサク","季節"]},{"name":"牡蠣料理","emoji":"🦪","imageCode":"1F9AA","category":["japanese","western","seafood"],"badge":"魚介","desc":"生、焼き、蒸し、フライ。海のミルクを好みの形で。","tags":["魚介","ごほうび","ワイン"]},{"name":"シーフードグリル","emoji":"🐟","imageCode":"1F41F","category":["western","seafood","light"],"badge":"魚介","desc":"魚や海老、いかを香ばしく。レモンでさっぱり。","tags":["魚介","香ばしい","さっぱり"]},{"name":"カルパッチョ","emoji":"🐟","imageCode":"1F41F","category":["western","seafood","light"],"badge":"前菜","desc":"薄切りの魚介をオイルと柑橘でさっぱりと。","tags":["魚介","さっぱり","おつまみ"]},{"name":"ポキ","emoji":"🥗","imageCode":"1F957","category":["western","seafood","rice","light"],"badge":"ハワイ","desc":"魚と野菜をごはんにのせた、彩り豊かなボウル。","tags":["魚介","野菜","さっぱり"]},{"name":"タコライス","emoji":"🌮","imageCode":"1F32E","category":["western","meat","rice","spicy"],"badge":"沖縄","desc":"スパイシーなひき肉、野菜、チーズをごはんに。","tags":["ごはん","スパイシー","野菜"]},{"name":"ガパオライス","emoji":"🍛","imageCode":"1F35B","category":["asian","meat","rice","spicy"],"badge":"タイ","desc":"バジル香るひき肉炒めと目玉焼きでごはんが進む。","tags":["香り","辛い","ごはん"]},{"name":"ビビンバ","emoji":"🍚","imageCode":"1F35A","category":["asian","rice","spicy"],"badge":"韓国","desc":"ナムル、肉、卵を混ぜて楽しむ彩りごはん。","tags":["野菜","ごはん","辛い"]},{"name":"キンパ","emoji":"🍣","imageCode":"1F363","category":["asian","rice","light"],"badge":"韓国","desc":"ごま油香る韓国風のり巻き。つまみやすくシェア向き。","tags":["ごはん","手軽","シェア"]},{"name":"スンドゥブ","emoji":"🍲","imageCode":"1F372","category":["asian","spicy","light"],"badge":"韓国","desc":"豆腐と具材を辛いスープでぐつぐつ。体もぽかぽか。","tags":["辛い","温かい","豆腐"]},{"name":"サムギョプサル","emoji":"🥩","imageCode":"1F969","category":["asian","meat"],"badge":"韓国","desc":"焼いた豚肉を野菜で包んで、にぎやかに。","tags":["肉","野菜","みんなで"]},{"name":"生春巻き","emoji":"🥗","imageCode":"1F957","category":["asian","light"],"badge":"ベトナム","desc":"野菜や海老をもちもちの皮で包んだ、軽やかな一品。","tags":["さっぱり","野菜","おつまみ"]},{"name":"せいろ蒸し","emoji":"🧺","imageCode":"1F9FA","category":["japanese","asian","light"],"badge":"蒸し料理","desc":"肉や魚、野菜を蒸して素材の味をやさしく楽しむ。","tags":["野菜","ヘルシー","温かい"]},{"name":"湯豆腐","emoji":"🍲","imageCode":"1F372","category":["japanese","light"],"badge":"豆腐","desc":"昆布だしで温めた豆腐を薬味とぽん酢で。","tags":["やさしい","温かい","ヘルシー"]},{"name":"おにぎり","emoji":"🍙","imageCode":"1F359","category":["japanese","rice","light"],"badge":"軽食","desc":"鮭、梅、昆布。好きな具で手軽にひと休み。","tags":["手軽","ごはん","軽め"]},{"name":"お茶漬け","emoji":"🍚","imageCode":"1F35A","category":["japanese","rice","light"],"badge":"締め","desc":"さらっと食べられる、夜食や飲んだ後の頼れる一杯。","tags":["さっぱり","ごはん","やさしい"]},{"name":"炊き込みご飯","emoji":"🍚","imageCode":"1F35A","category":["japanese","rice"],"badge":"ごはん","desc":"だしと具材の旨みがしみた、香り豊かなごはん。","tags":["だし","ごはん","和食"]},{"name":"うなぎ","emoji":"🍱","imageCode":"1F371","category":["japanese","seafood","rice"],"badge":"ごほうび","desc":"香ばしい蒲焼きと甘辛いタレで、力をつけたい日に。","tags":["魚","ごはん","ごほうび"]},{"name":"カツオのたたき","emoji":"🐟","imageCode":"1F41F","category":["japanese","seafood","light"],"badge":"魚","desc":"香ばしい表面と赤身の旨み。薬味をたっぷり添えて。","tags":["魚","さっぱり","おつまみ"]},{"name":"チーズ料理","emoji":"🧀","imageCode":"1F9C0","category":["western"],"badge":"チーズ","desc":"盛り合わせ、ラクレット、フォンデュ。濃厚な夜に。","tags":["チーズ","ワイン","おつまみ"]},{"name":"生ハム","emoji":"🥓","imageCode":"1F953","category":["western","meat","light"],"badge":"前菜","desc":"塩気と旨みを、果物やチーズと一緒に。","tags":["おつまみ","肉","ワイン"]},{"name":"ナッツ・ドライフルーツ","emoji":"🥜","imageCode":"1F95C","category":["light","sweet"],"badge":"おつまみ","desc":"少しずつつまめて、ウイスキーやワインのお供に。","tags":["手軽","おつまみ","軽め"]},{"name":"チョコレート","emoji":"🍫","imageCode":"1F36B","category":["sweet"],"badge":"甘い","desc":"ビター、ミルク、ナッツ入り。食後の小さなごほうび。","tags":["甘い","ごほうび","おつまみ"]}];
+    const drinks = [{"name":"生ビール","emoji":"🍺","imageCode":"1F37A","category":["beer"],"badge":"ビール","desc":"すっきりした苦味と爽快なのどごし。最初の一杯の定番。","tags":["爽快","定番","乾杯"],"pairings":[{"name":"唐揚げ","emoji":"🍗","reason":"衣の香ばしさと脂を、ビールの苦味がすっきり流してくれる。"},{"name":"焼き鳥","emoji":"🍗","reason":"塩にもタレにも合わせやすく、炭火の香りとも好相性。"},{"name":"餃子","emoji":"🥟","reason":"肉汁と香ばしい焼き目を、冷たいビールで軽快に楽しめる。"}]},{"name":"クラフトIPA","emoji":"🍺","imageCode":"1F37A","category":["beer"],"badge":"ビール","desc":"ホップの香りとしっかりした苦味。味の濃い料理に負けない。","tags":["香り","苦味","個性派"],"pairings":[{"name":"ハンバーガー","emoji":"🍔","reason":"肉とソースの濃さに、IPAの苦味と香りがしっかり寄り添う。"},{"name":"カレー","emoji":"🍛","reason":"スパイスの香りとホップの華やかさが重なり、余韻が広がる。"},{"name":"チーズ料理","emoji":"🧀","reason":"濃厚なチーズを苦味が引き締め、次のひと口を誘う。"}]},{"name":"ヴァイツェン","emoji":"🍺","imageCode":"1F37A","category":["beer","light"],"badge":"白ビール","desc":"小麦由来のまろやかさとフルーティーな香り。","tags":["まろやか","香り","軽やか"],"pairings":[{"name":"ソーセージ","emoji":"🌭","reason":"肉の塩気と白ビールのやわらかな甘みがよくなじむ。"},{"name":"ピザ","emoji":"🍕","reason":"チーズや生地の香ばしさを、軽い酸味が爽やかにまとめる。"},{"name":"サラダ・デリ","emoji":"🥗","reason":"穏やかな味わいなので、野菜やハーブの風味を邪魔しにくい。"}]},{"name":"ハイボール","emoji":"🥃","imageCode":"1F943","category":["spirits","light"],"badge":"ウイスキー","desc":"炭酸ですっきり。香ばしい料理や揚げものと合わせやすい。","tags":["爽快","食中酒","定番"],"pairings":[{"name":"唐揚げ","emoji":"🍗","reason":"強い炭酸が揚げものの脂を切り、香ばしさを引き立てる。"},{"name":"焼肉","emoji":"🥩","reason":"肉の脂やタレの甘さを、ドライな後味が軽くしてくれる。"},{"name":"餃子","emoji":"🥟","reason":"炭酸とウイスキーの香りが、焼き目と肉汁にぴったり。"}]},{"name":"レモンサワー","emoji":"🍋","imageCode":"1F34B","category":["sour","light"],"badge":"サワー","desc":"柑橘の酸味でさっぱり。幅広い料理に合わせやすい。","tags":["酸味","爽快","食中酒"],"pairings":[{"name":"焼き鳥","emoji":"🍗","reason":"レモンの酸味が鶏の脂を軽くし、塩味をすっきりまとめる。"},{"name":"刺身","emoji":"🐟","reason":"柑橘の香りが魚の風味を爽やかに引き立てる。"},{"name":"たこ焼き","emoji":"🐙","reason":"ソースの甘さとレモンの酸味が対照的で、飽きずに楽しめる。"}]},{"name":"梅酒","emoji":"🍸","imageCode":"1F378","category":["japanese","sweet"],"badge":"果実酒","desc":"甘酸っぱく、ロックでもソーダ割りでも飲みやすい。","tags":["甘い","果実","飲みやすい"],"pairings":[{"name":"チーズ料理","emoji":"🧀","reason":"梅の甘酸っぱさがチーズの塩気とコクを引き立てる。"},{"name":"生春巻き","emoji":"🥗","reason":"軽やかな野菜とハーブに、果実味がやさしく寄り添う。"},{"name":"チョコレート","emoji":"🍫","reason":"濃い甘さ同士でも、梅の酸味が後味をきれいに整える。"}]},{"name":"純米酒","emoji":"🍶","imageCode":"1F376","category":["japanese"],"badge":"日本酒","desc":"米の旨みを感じる、ふくらみのある味わい。","tags":["旨み","和食","常温も燗も"],"pairings":[{"name":"刺身","emoji":"🐟","reason":"魚の旨みと日本酒の米の旨みが自然に重なり合う。"},{"name":"焼き魚","emoji":"🐟","reason":"香ばしい皮や塩味を、ふくらみのある味わいが受け止める。"},{"name":"天ぷら","emoji":"🍤","reason":"衣の油を洗い流しつつ、素材の甘みを引き立てる。"}]},{"name":"吟醸酒","emoji":"🍶","imageCode":"1F376","category":["japanese","light"],"badge":"日本酒","desc":"華やかな香りとすっきりした口当たり。冷酒にも。","tags":["華やか","すっきり","冷酒"],"pairings":[{"name":"お寿司","emoji":"🍣","reason":"繊細な香りと軽快な口当たりが、魚と酢飯を邪魔しない。"},{"name":"カルパッチョ","emoji":"🐟","reason":"魚介と柑橘の爽やかさに、吟醸香がきれいに重なる。"},{"name":"湯豆腐","emoji":"🍲","reason":"淡い味わい同士で、豆腐の甘みを上品に楽しめる。"}]},{"name":"芋焼酎","emoji":"🥃","imageCode":"1F943","category":["japanese","spirits"],"badge":"焼酎","desc":"豊かな香りと甘み。お湯割り、ロック、水割りで。","tags":["香り","コク","和食"],"pairings":[{"name":"もつ鍋","emoji":"🍲","reason":"にんにくと脂の強さに、芋の豊かな香りが負けずに合う。"},{"name":"豚の角煮","emoji":"🍖","reason":"甘辛い煮汁と豚のコクを、焼酎の風味が受け止める。"},{"name":"焼き鳥","emoji":"🍗","reason":"炭火の香ばしさと芋の香りが重なり、余韻が深くなる。"}]},{"name":"麦焼酎","emoji":"🥃","imageCode":"1F943","category":["japanese","spirits","light"],"badge":"焼酎","desc":"香ばしく軽快。食事に合わせやすいすっきりタイプ。","tags":["香ばしい","すっきり","食中酒"],"pairings":[{"name":"おでん","emoji":"🍢","reason":"だしのやさしい旨みを邪魔せず、すっきり飲み進められる。"},{"name":"そば","emoji":"🍜","reason":"穀物の香り同士が自然になじみ、落ち着いた組み合わせ。"},{"name":"カツオのたたき","emoji":"🐟","reason":"薬味や燻した香りに、麦の香ばしさがよく合う。"}]},{"name":"赤ワイン","emoji":"🍷","imageCode":"1F377","category":["wine"],"badge":"ワイン","desc":"果実味と渋み。肉料理や濃厚なソースと合わせたい。","tags":["濃厚","肉料理","ゆっくり"],"pairings":[{"name":"ステーキ","emoji":"🥩","reason":"肉の旨みと脂をタンニンが受け止め、互いのコクが深まる。"},{"name":"ビーフシチュー","emoji":"🥘","reason":"濃厚な煮込みソースと果実味が重なり、満足感のある組み合わせ。"},{"name":"チーズ料理","emoji":"🧀","reason":"塩気と熟成香がワインの果実味を引き立てる。"}]},{"name":"白ワイン","emoji":"🍷","imageCode":"1F377","category":["wine","light"],"badge":"ワイン","desc":"爽やかな酸味と果実味。魚介や軽い前菜に。","tags":["爽やか","魚介","冷やして"],"pairings":[{"name":"牡蠣料理","emoji":"🦪","reason":"ミネラル感と酸味が、牡蠣の海の風味をきれいに引き立てる。"},{"name":"アヒージョ","emoji":"🫕","reason":"オイルのコクを酸味が軽くし、魚介の旨みを伸ばす。"},{"name":"シーフードグリル","emoji":"🐟","reason":"レモンやハーブの風味と白ワインの爽やかさが調和する。"}]},{"name":"ロゼワイン","emoji":"🍷","imageCode":"1F377","category":["wine","light"],"badge":"ワイン","desc":"赤と白の中間のような軽やかさ。幅広い料理に。","tags":["華やか","万能","軽やか"],"pairings":[{"name":"生ハム","emoji":"🥓","reason":"果実味が生ハムの塩気をやわらげ、軽快に楽しめる。"},{"name":"ピザ","emoji":"🍕","reason":"トマトの酸味やチーズに合わせやすい、親しみやすい組み合わせ。"},{"name":"サラダ・デリ","emoji":"🥗","reason":"野菜やドレッシングの味を受け止めつつ、彩りも華やか。"}]},{"name":"スパークリングワイン","emoji":"🥂","imageCode":"1F942","category":["wine","light"],"badge":"泡","desc":"泡と酸味で乾杯にも食中にも。揚げものにも強い。","tags":["乾杯","爽快","華やか"],"pairings":[{"name":"お寿司","emoji":"🍣","reason":"泡と酸味が口を整え、次のネタを新鮮に楽しめる。"},{"name":"フライドチキン","emoji":"🍗","reason":"きめ細かな泡が衣の脂を軽くして、後味を爽やかにする。"},{"name":"生ハム","emoji":"🥓","reason":"塩気と泡の爽快感が合い、乾杯の前菜にぴったり。"}]},{"name":"ウイスキー・ロック","emoji":"🥃","imageCode":"1F943","category":["spirits"],"badge":"ウイスキー","desc":"香りと余韻をゆっくり。少量をじっくり楽しみたい夜に。","tags":["香り","濃厚","ゆっくり"],"pairings":[{"name":"ステーキ","emoji":"🥩","reason":"樽香と肉の焼けた香りが重なり、力強い余韻を楽しめる。"},{"name":"ナッツ・ドライフルーツ","emoji":"🥜","reason":"香ばしさと自然な甘みが、ウイスキーの複雑な香りを広げる。"},{"name":"チョコレート","emoji":"🍫","reason":"ビターな甘みが樽香やバニラ香と重なり、食後にぴったり。"}]},{"name":"ジントニック","emoji":"🍸","imageCode":"1F378","category":["cocktail","light"],"badge":"カクテル","desc":"ボタニカルの香りとトニックの爽快感。","tags":["爽快","香り","定番"],"pairings":[{"name":"アヒージョ","emoji":"🫕","reason":"ハーブ系の香りが、にんにくとオイルの風味を爽やかにまとめる。"},{"name":"生ハム","emoji":"🥓","reason":"塩気とジンのボタニカルな香りがきれいに重なる。"},{"name":"フィッシュ＆チップス","emoji":"🍟","reason":"炭酸と柑橘感が揚げものを軽快に楽しませてくれる。"}]},{"name":"モヒート","emoji":"🍹","imageCode":"1F379","category":["cocktail","light"],"badge":"カクテル","desc":"ミントとライムの爽快感。暑い日やスパイシー料理に。","tags":["ミント","爽快","南国"],"pairings":[{"name":"メキシカン","emoji":"🌮","reason":"ライムとミントがスパイスを爽やかに受け止める。"},{"name":"ガパオライス","emoji":"🍛","reason":"ハーブの香り同士が響き合い、辛さも心地よく流す。"},{"name":"生春巻き","emoji":"🥗","reason":"野菜とハーブの軽やかさを、そのまま伸ばしてくれる。"}]},{"name":"サングリア","emoji":"🍹","imageCode":"1F379","category":["wine","cocktail","sweet"],"badge":"カクテル","desc":"ワインに果物を合わせた、華やかで飲みやすい一杯。","tags":["果実","甘い","華やか"],"pairings":[{"name":"パエリア","emoji":"🥘","reason":"魚介とサフランの香りに、果実味がにぎやかに寄り添う。"},{"name":"生ハム","emoji":"🥓","reason":"塩気と果物の甘みが対照的で、つい手が伸びる。"},{"name":"ピザ","emoji":"🍕","reason":"トマトとチーズに果実味が合い、気軽な食卓にぴったり。"}]},{"name":"カシスソーダ","emoji":"🍹","imageCode":"1F379","category":["cocktail","sweet","light"],"badge":"カクテル","desc":"ベリーの甘酸っぱさと炭酸。飲みやすい定番カクテル。","tags":["甘酸っぱい","炭酸","飲みやすい"],"pairings":[{"name":"チーズ料理","emoji":"🧀","reason":"ベリーの酸味がチーズの濃厚さを軽くし、相性の良い組み合わせ。"},{"name":"生ハム","emoji":"🥓","reason":"果実の甘みと生ハムの塩気が互いを引き立てる。"},{"name":"スイーツ","emoji":"🍰","reason":"ベリー系の香りがケーキやクリームと自然につながる。"}]},{"name":"ノンアルコールビール","emoji":"🍺","imageCode":"1F37A","category":["nonal","beer","light"],"badge":"ノンアル","desc":"運転予定の日や休肝日にも。ビール気分と食事を楽しめる。","tags":["ノンアル","爽快","食中"],"pairings":[{"name":"餃子","emoji":"🥟","reason":"香ばしい焼き目と炭酸の爽快感で、ビール気分を楽しめる。"},{"name":"ピザ","emoji":"🍕","reason":"チーズやトマトの濃い味にも合わせやすい。"},{"name":"唐揚げ","emoji":"🍗","reason":"揚げものの脂を炭酸が軽くし、満足感もしっかり。"}]}];
+    const palettes = [
+      ['#ffe0c2','#ffc5ad'], ['#ffdfdc','#ffd7aa'], ['#e8f3cf','#ffdfb6'], ['#dbefff','#d9e4ff'],
+      ['#f5ddff','#ffd8eb'], ['#d9f4ea','#dcf3c7'], ['#fff0b9','#ffd1b5'], ['#e2e8ff','#f0ddff']
+    ];
+    const drinkPalettes = [
+      ['#e4ddff','#cfc2ff'], ['#ffdff0','#e7d9ff'], ['#d9edff','#dcd8ff'], ['#efe1ff','#ffdce9'],
+      ['#dff4ee','#d9e4ff'], ['#fff0cf','#e4d8ff'], ['#e8e0ff','#d7efff'], ['#f6dcff','#ffe1ec']
+    ];
+
+    const state = { mode:'food', foodFilter:'all', drinkFilter:'all', lastFocused:null, modalMode:'food' };
+    const foodGrid = document.getElementById('foodGrid');
+    const drinkGrid = document.getElementById('drinkGrid');
+    const foodSearch = document.getElementById('foodSearch');
+    const drinkSearch = document.getElementById('drinkSearch');
+    const modal = document.getElementById('resultModal');
+    const resultDialog = document.getElementById('resultDialog');
+    const resultTitle = document.getElementById('resultTitle');
+    const resultDescription = document.getElementById('resultDescription');
+    const resultImage = document.getElementById('resultImage');
+    const resultFallback = document.getElementById('resultFallback');
+    const resultArt = document.getElementById('resultArt');
+    const resultLabel = document.getElementById('resultLabel');
+    const pairingArea = document.getElementById('pairingArea');
+    const pairingList = document.getElementById('pairingList');
+
+    function imageUrl(item) { return item.imageUrl || `https://openmoji.org/data/color/svg/${item.imageCode}.svg`; }
+    function normalize(value) { return String(value).toLowerCase().replace(/\s+/g, ''); }
+
+    function makeCard(item, index, mode) {
+      const card = document.createElement('article');
+      const paletteList = mode === 'drink' ? drinkPalettes : palettes;
+      const [a,b] = paletteList[index % paletteList.length];
+      card.className = 'choice-card';
+      card.tabIndex = 0;
+      card.dataset.index = index;
+      card.dataset.mode = mode;
+      card.style.setProperty('--card-a', a);
+      card.style.setProperty('--card-b', b);
+      card.setAttribute('aria-label', `${item.name}を選ぶ`);
+      card.innerHTML = `
+        <div class="art">
+          <img src="${imageUrl(item)}" alt="${item.name}のイラスト" loading="lazy">
+          <span class="emoji-fallback" aria-hidden="true">${item.emoji}</span>
+        </div>
+        <div class="card-body">
+          <div class="card-top"><h3>${item.name}</h3><span class="badge">${item.badge}</span></div>
+          <p>${item.desc}</p>
+          <div class="tags">${item.tags.map(tag => `<span class="tag"># ${tag}</span>`).join('')}</div>
+        </div>`;
+      const img = card.querySelector('img');
+      const fallback = card.querySelector('.emoji-fallback');
+      img.addEventListener('error', () => { img.style.display = 'none'; fallback.style.display = 'block'; }, {once:true});
+      const select = () => mode === 'drink' ? showDrinkResult(item, index, card) : showFoodResult(item, index, card);
+      card.addEventListener('click', select);
+      card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(); } });
+      return card;
+    }
+
+    foods.forEach((item, index) => foodGrid.appendChild(makeCard(item, index, 'food')));
+    drinks.forEach((item, index) => drinkGrid.appendChild(makeCard(item, index, 'drink')));
+
+    function filterItems(mode) {
+      const items = mode === 'food' ? foods : drinks;
+      const grid = mode === 'food' ? foodGrid : drinkGrid;
+      const search = mode === 'food' ? foodSearch : drinkSearch;
+      const activeFilter = mode === 'food' ? state.foodFilter : state.drinkFilter;
+      const query = normalize(search.value);
+      const visible = [];
+      [...grid.children].forEach(card => {
+        const item = items[Number(card.dataset.index)];
+        const filterMatch = activeFilter === 'all' || item.category.includes(activeFilter);
+        const pairingWords = item.pairings ? item.pairings.flatMap(p => [p.name, p.reason]) : [];
+        const haystack = normalize([item.name, item.badge, item.desc, ...item.tags, ...item.category, ...pairingWords].join(' '));
+        const show = filterMatch && (!query || haystack.includes(query));
+        card.hidden = !show;
+        if (show) visible.push({item, index:Number(card.dataset.index), card});
+      });
+      document.getElementById(mode === 'food' ? 'foodCount' : 'drinkCount').textContent = `${visible.length}種類表示中`;
+      document.getElementById(mode === 'food' ? 'foodEmpty' : 'drinkEmpty').style.display = visible.length ? 'none' : 'block';
+      return visible;
+    }
+
+    foodSearch.addEventListener('input', () => filterItems('food'));
+    drinkSearch.addEventListener('input', () => filterItems('drink'));
+
+    function setupFilters(containerId, mode) {
+      document.getElementById(containerId).addEventListener('click', e => {
+        const button = e.target.closest('[data-filter]');
+        if (!button) return;
+        if (mode === 'food') state.foodFilter = button.dataset.filter;
+        else state.drinkFilter = button.dataset.filter;
+        document.querySelectorAll(`#${containerId} .filter`).forEach(btn => btn.classList.toggle('active', btn === button));
+        filterItems(mode);
+      });
+    }
+    setupFilters('foodFilters', 'food');
+    setupFilters('drinkFilters', 'drink');
+
+    const heroContent = {
+      food: { eyebrow:'🍽️ 迷った日のごはんカタログ', question:'なに食べる？', copy:'定番からちょっと変わり種まで、ずらっと一覧にしました。眺めて選ぶもよし、運にまかせるもよし。', plate:'🍽️', chips:['🍣','🍕','🥟'] },
+      drink: { eyebrow:'🍷 ごはんとの相性もわかるお酒カタログ', question:'なに飲む？', copy:'気分に合う一杯を選ぶと、相性の良いごはんを3種類提案します。お酒から晩ごはんを決めるのもあり。', plate:'🍷', chips:['🍺','🥂','🍶'] }
+    };
+
+    function switchMode(mode, focusTab = false) {
+      state.mode = mode;
+      const isDrink = mode === 'drink';
+      document.body.classList.toggle('drink-mode', isDrink);
+      document.getElementById('foodPanel').hidden = isDrink;
+      document.getElementById('drinkPanel').hidden = !isDrink;
+      document.getElementById('foodControls').hidden = isDrink;
+      document.getElementById('drinkControls').hidden = !isDrink;
+      document.querySelectorAll('.mode-tab').forEach(tab => tab.setAttribute('aria-selected', String(tab.dataset.mode === mode)));
+      const content = heroContent[mode];
+      document.getElementById('heroEyebrow').textContent = content.eyebrow;
+      document.getElementById('heroQuestion').textContent = content.question;
+      document.getElementById('heroCopy').textContent = content.copy;
+      document.getElementById('plateCenter').textContent = content.plate;
+      document.getElementById('chipA').textContent = content.chips[0];
+      document.getElementById('chipB').textContent = content.chips[1];
+      document.getElementById('chipC').textContent = content.chips[2];
+      document.querySelectorAll('[data-random]').forEach(btn => { btn.textContent = isDrink ? '🎲 お酒をおまかせ' : '🎲 ごはんをおまかせ'; });
+      filterItems(mode);
+      if (focusTab) document.getElementById(isDrink ? 'drinkTab' : 'foodTab').focus();
+    }
+
+    document.querySelector('.mode-tabs').addEventListener('click', e => {
+      const tab = e.target.closest('[data-mode]');
+      if (tab) switchMode(tab.dataset.mode);
+    });
+    document.querySelector('.mode-tabs').addEventListener('keydown', e => {
+      if (!['ArrowLeft','ArrowRight'].includes(e.key)) return;
+      e.preventDefault();
+      switchMode(state.mode === 'food' ? 'drink' : 'food', true);
+    });
+
+    function setResultImage(item, index, mode) {
+      const paletteList = mode === 'drink' ? drinkPalettes : palettes;
+      const [a,b] = paletteList[index % paletteList.length];
+      resultArt.style.setProperty('--result-a', a);
+      resultArt.style.setProperty('--result-b', b);
+      resultImage.style.display = 'block';
+      resultFallback.style.display = 'none';
+      resultImage.src = imageUrl(item);
+      resultImage.alt = `${item.name}のイラスト`;
+      resultFallback.textContent = item.emoji;
+      resultImage.onerror = () => { resultImage.style.display = 'none'; resultFallback.style.display = 'block'; };
+    }
+
+    function openModal(trigger) {
+      state.lastFocused = trigger || document.activeElement;
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      document.getElementById('closeModal').focus();
+    }
+
+    function showFoodResult(item, index, trigger) {
+      state.modalMode = 'food';
+      resultDialog.classList.remove('drink-result');
+      resultLabel.textContent = "TODAY'S PICK";
+      resultTitle.textContent = item.name;
+      resultDescription.textContent = item.desc;
+      pairingArea.hidden = true;
+      pairingList.innerHTML = '';
+      document.getElementById('closeModal').textContent = 'これにする！';
+      setResultImage(item, index, 'food');
+      openModal(trigger);
+    }
+
+    function showDrinkResult(item, index, trigger) {
+      state.modalMode = 'drink';
+      resultDialog.classList.add('drink-result');
+      resultLabel.textContent = 'DRINK & PAIRING';
+      resultTitle.textContent = item.name;
+      resultDescription.textContent = item.desc;
+      pairingArea.hidden = false;
+      pairingList.innerHTML = item.pairings.map(pairing => `
+        <article class="pairing-card">
+          <div class="pairing-name"><span aria-hidden="true">${pairing.emoji}</span>${pairing.name}</div>
+          <p>${pairing.reason}</p>
+        </article>`).join('');
+      document.getElementById('closeModal').textContent = 'これを飲む！';
+      setResultImage(item, index, 'drink');
+      openModal(trigger);
+    }
+
+    function closeModal() {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+      if (state.lastFocused && typeof state.lastFocused.focus === 'function') state.lastFocused.focus();
+    }
+
+    function chooseRandom(mode = state.mode) {
+      const visible = filterItems(mode);
+      if (!visible.length) {
+        const search = mode === 'food' ? foodSearch : drinkSearch;
+        search.focus();
+        if (search.animate) search.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}], {duration:260});
+        return;
+      }
+      const choice = visible[Math.floor(Math.random() * visible.length)];
+      if (mode === 'drink') showDrinkResult(choice.item, choice.index, document.activeElement);
+      else showFoodResult(choice.item, choice.index, document.activeElement);
+    }
+
+    document.querySelectorAll('[data-random]').forEach(button => button.addEventListener('click', () => chooseRandom(state.mode)));
+    document.getElementById('againButton').addEventListener('click', () => chooseRandom(state.modalMode));
+    document.getElementById('closeModal').addEventListener('click', closeModal);
+    document.getElementById('scrollButton').addEventListener('click', () => document.getElementById('catalog').scrollIntoView({behavior:'smooth'}));
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+
+    filterItems('food');
+    filterItems('drink');
+    switchMode('food');
+  </script>
+</body>
+</html>
