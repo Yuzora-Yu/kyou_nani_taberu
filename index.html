@@ -122,6 +122,43 @@
     .floating-random { position: fixed; z-index: 30; right: 20px; bottom: 20px; min-height: 58px; padding: 0 22px; border: 0; border-radius: 999px; color: white; background: linear-gradient(135deg, var(--accent), #ff9f37); font-weight: 900; box-shadow: 0 16px 35px rgba(255,107,61,.36); transition: transform .18s ease; }
     .floating-random:hover { transform: translateY(-3px) scale(1.02); }
 
+    .duel-modal { position: fixed; inset: 0; z-index: 110; display: none; place-items: center; padding: 20px; background: rgba(38, 26, 20, .62); backdrop-filter: blur(10px); overflow-y: auto; }
+    .duel-modal.open { display: grid; animation: fade .16s ease both; }
+    .duel-dialog { width: min(900px, 100%); max-height: calc(100vh - 40px); overflow-y: auto; border-radius: 28px; background: #fffdf9; box-shadow: 0 28px 90px rgba(33,20,14,.34); animation: pop .24s cubic-bezier(.2,.9,.3,1.15) both; }
+    .duel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding: 24px 26px 13px; }
+    .duel-kicker { margin: 0 0 3px; color: var(--accent-dark); font-size: 12px; font-weight: 900; letter-spacing: .08em; }
+    .drink-mode .duel-kicker { color: var(--drink-dark); }
+    .duel-head h2 { margin: 0; font-size: clamp(28px, 5vw, 42px); line-height: 1.2; letter-spacing: -.035em; }
+    .duel-close { flex: 0 0 auto; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; color: var(--text); background: #fff; font-size: 27px; line-height: 1; }
+    .duel-close:hover { background: #f7eee8; }
+    .duel-meta { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 26px; }
+    .duel-meta span { padding: 6px 10px; border-radius: 999px; color: var(--muted); background: #f5ede7; font-size: 12px; font-weight: 800; }
+    .drink-mode .duel-meta span { background: #f0ecff; }
+    .duel-instruction { margin: 13px 26px 18px; color: var(--muted); font-size: 14px; }
+    .duel-choices { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 15px; align-items: center; padding: 0 26px; }
+    .duel-choice { min-width: 0; overflow: hidden; padding: 0; border: 2px solid transparent; border-radius: 23px; color: var(--text); background: #fff; box-shadow: 0 10px 30px rgba(72,42,28,.1); text-align: left; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+    .duel-choice:hover, .duel-choice:focus-visible { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 18px 38px rgba(72,42,28,.15); outline: none; }
+    .drink-mode .duel-choice:hover, .drink-mode .duel-choice:focus-visible { border-color: var(--drink-accent); }
+    .duel-choice.is-champion { border-color: var(--accent); }
+    .drink-mode .duel-choice.is-champion { border-color: var(--drink-accent); }
+    .duel-choice.is-new { animation: duelIn .24s ease both; }
+    .duel-choice-art { position: relative; height: 180px; display: grid; place-items: center; overflow: hidden; background: linear-gradient(135deg, var(--duel-a), var(--duel-b)); }
+    .duel-choice-art::before { content: ""; position: absolute; width: 126px; height: 126px; border-radius: 50%; background: rgba(255,255,255,.62); box-shadow: 0 0 0 18px rgba(255,255,255,.18); }
+    .duel-choice-art img { position: relative; z-index: 1; width: 116px; height: 116px; object-fit: contain; filter: drop-shadow(0 10px 12px rgba(70,40,20,.15)); }
+    .duel-choice-art .emoji-fallback { font-size: 84px; }
+    .duel-choice-body { min-height: 154px; padding: 17px 19px 19px; }
+    .duel-choice-label { color: var(--accent-dark); font-size: 11px; font-weight: 900; letter-spacing: .06em; }
+    .drink-mode .duel-choice-label { color: var(--drink-dark); }
+    .duel-choice h3 { margin: 3px 0 5px; font-size: 24px; line-height: 1.25; letter-spacing: -.025em; }
+    .duel-choice p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
+    .duel-vs { display: grid; place-items: center; width: 50px; height: 50px; border-radius: 50%; color: #fff; background: var(--text); font-size: 12px; font-weight: 900; letter-spacing: .06em; box-shadow: 0 9px 22px rgba(46,36,31,.2); }
+    .duel-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 19px 26px 25px; }
+    .duel-footer button { min-height: 50px; padding: 10px 17px; border-radius: 999px; font-weight: 900; }
+    .duel-restart { border: 1px solid var(--line); color: var(--text); background: #fff; }
+    .duel-decide { border: 0; color: #fff; background: linear-gradient(135deg, var(--accent), #ff8d37); }
+    .drink-mode .duel-decide { background: linear-gradient(135deg, var(--drink-accent), #a95cff); }
+    @keyframes duelIn { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
     .modal { position: fixed; inset: 0; z-index: 100; display: none; place-items: center; padding: 20px; background: rgba(38, 26, 20, .54); backdrop-filter: blur(9px); overflow-y: auto; }
     .modal.open { display: grid; animation: fade .16s ease both; }
     .dialog { width: min(620px, 100%); overflow: hidden; border-radius: 32px; background: #fff; box-shadow: 0 28px 90px rgba(33,20,14,.32); animation: pop .24s cubic-bezier(.2,.9,.3,1.15) both; }
@@ -184,6 +221,22 @@
       .dialog { margin: auto 0; }
       .result-art { min-height: 190px; }
       .result-art img { width: 118px; height: 118px; }
+      .duel-modal { padding: 10px; }
+      .duel-dialog { max-height: calc(100vh - 20px); border-radius: 22px; }
+      .duel-head { padding: 20px 17px 10px; }
+      .duel-meta { padding: 0 17px; }
+      .duel-instruction { margin: 11px 17px 15px; }
+      .duel-choices { grid-template-columns: 1fr; gap: 9px; padding: 0 17px; }
+      .duel-vs { width: 40px; height: 40px; margin: -4px auto; }
+      .duel-choice { display: grid; grid-template-columns: 126px minmax(0, 1fr); }
+      .duel-choice-art { height: 100%; min-height: 142px; }
+      .duel-choice-art::before { width: 88px; height: 88px; box-shadow: 0 0 0 12px rgba(255,255,255,.18); }
+      .duel-choice-art img { width: 82px; height: 82px; }
+      .duel-choice-art .emoji-fallback { font-size: 62px; }
+      .duel-choice-body { min-height: 0; padding: 14px; align-self: center; }
+      .duel-choice h3 { font-size: 19px; }
+      .duel-choice p { font-size: 12px; line-height: 1.55; }
+      .duel-footer { grid-template-columns: 1fr; padding: 15px 17px 20px; }
     }
     @media (max-width: 390px) {
       .grid { grid-template-columns: 1fr; }
@@ -203,9 +256,10 @@
       <div>
         <div class="eyebrow" id="heroEyebrow">🍽️ 迷った日のごはんカタログ</div>
         <h1>きょう、<br><span id="heroQuestion">なに食べる？</span></h1>
-        <p class="hero-copy" id="heroCopy">定番からちょっと変わり種まで、ずらっと一覧にしました。眺めて選ぶもよし、運にまかせるもよし。</p>
+        <p class="hero-copy" id="heroCopy">定番からちょっと変わり種まで、ずらっと一覧にしました。眺める、運にまかせる、2択で絞る。好きな選び方でどうぞ。</p>
         <div class="hero-actions">
           <button class="primary" type="button" data-random>🎲 ランダムで決める</button>
+          <button class="secondary" type="button" data-duel>⚖️ 2択で決める</button>
           <button class="secondary" type="button" id="scrollButton">一覧から眺める ↓</button>
         </div>
       </div>
@@ -279,6 +333,26 @@
 
   <button class="floating-random" type="button" data-random aria-label="表示中の候補からランダムで選ぶ">🎲 おまかせ</button>
 
+  <div class="duel-modal" id="duelModal" role="dialog" aria-modal="true" aria-labelledby="duelTitle" aria-describedby="duelInstruction">
+    <div class="duel-dialog">
+      <div class="duel-head">
+        <div><p class="duel-kicker" id="duelModeLabel">ごはんの2択</p><h2 id="duelTitle">どっちにする？</h2></div>
+        <button class="duel-close" type="button" id="closeDuel" aria-label="2択を閉じる" title="閉じる">×</button>
+      </div>
+      <div class="duel-meta" aria-live="polite"><span id="duelProgress">1回目</span><span id="duelRemaining">残り 0候補</span><span id="duelExcluded">除外 0件</span></div>
+      <p class="duel-instruction" id="duelInstruction">残したい方を選んでください。選ばなかった方は外れ、別の候補が現れます。</p>
+      <div class="duel-choices">
+        <button class="duel-choice" type="button" data-duel-side="left" aria-label="左の候補を残す"></button>
+        <span class="duel-vs" aria-hidden="true">VS</span>
+        <button class="duel-choice" type="button" data-duel-side="right" aria-label="右の候補を残す"></button>
+      </div>
+      <div class="duel-footer">
+        <button class="duel-restart" type="button" id="duelRestart">↻ 組み合わせをやり直す</button>
+        <button class="duel-decide" type="button" id="duelDecide" hidden>この候補に決める</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
     <div class="dialog" id="resultDialog">
       <div class="result-art" id="resultArt">
@@ -318,7 +392,7 @@
       ['#dff4ee','#d9e4ff'], ['#fff0cf','#e4d8ff'], ['#e8e0ff','#d7efff'], ['#f6dcff','#ffe1ec']
     ];
 
-    const state = { mode:'food', foodFilter:'all', drinkFilter:'all', lastFocused:null, modalMode:'food' };
+    const state = { mode:'food', foodFilter:'all', drinkFilter:'all', lastFocused:null, modalMode:'food', duel:null };
     const foodGrid = document.getElementById('foodGrid');
     const drinkGrid = document.getElementById('drinkGrid');
     const foodSearch = document.getElementById('foodSearch');
@@ -333,6 +407,11 @@
     const resultLabel = document.getElementById('resultLabel');
     const pairingArea = document.getElementById('pairingArea');
     const pairingList = document.getElementById('pairingList');
+    const duelModal = document.getElementById('duelModal');
+    const duelProgress = document.getElementById('duelProgress');
+    const duelRemaining = document.getElementById('duelRemaining');
+    const duelExcluded = document.getElementById('duelExcluded');
+    const duelDecide = document.getElementById('duelDecide');
 
     function imageUrl(item) { return item.imageUrl || `https://openmoji.org/data/color/svg/${item.imageCode}.svg`; }
     function normalize(value) { return String(value).toLowerCase().replace(/\s+/g, ''); }
@@ -408,8 +487,8 @@
     setupFilters('drinkFilters', 'drink');
 
     const heroContent = {
-      food: { eyebrow:'🍽️ 迷った日のごはんカタログ', question:'なに食べる？', copy:'定番からちょっと変わり種まで、ずらっと一覧にしました。眺めて選ぶもよし、運にまかせるもよし。', plate:'🍽️', chips:['🍣','🍕','🥟'] },
-      drink: { eyebrow:'🍷 ごはんとの相性もわかるお酒カタログ', question:'なに飲む？', copy:'気分に合う一杯を選ぶと、相性の良いごはんを3種類提案します。お酒から晩ごはんを決めるのもあり。', plate:'🍷', chips:['🍺','🥂','🍶'] }
+      food: { eyebrow:'🍽️ 迷った日のごはんカタログ', question:'なに食べる？', copy:'定番からちょっと変わり種まで、ずらっと一覧にしました。眺める、運にまかせる、2択で絞る。好きな選び方でどうぞ。', plate:'🍽️', chips:['🍣','🍕','🥟'] },
+      drink: { eyebrow:'🍷 ごはんとの相性もわかるお酒カタログ', question:'なに飲む？', copy:'気分に合う一杯を一覧、ランダム、2択から選べます。選んだお酒には、相性の良いごはんを3種類提案します。', plate:'🍷', chips:['🍺','🥂','🍶'] }
     };
 
     function switchMode(mode, focusTab = false) {
@@ -430,6 +509,7 @@
       document.getElementById('chipB').textContent = content.chips[1];
       document.getElementById('chipC').textContent = content.chips[2];
       document.querySelectorAll('[data-random]').forEach(btn => { btn.textContent = isDrink ? '🎲 お酒をおまかせ' : '🎲 ごはんをおまかせ'; });
+      document.querySelectorAll('[data-duel]').forEach(btn => { btn.textContent = isDrink ? '⚖️ 2択でお酒を決める' : '⚖️ 2択でごはんを決める'; });
       filterItems(mode);
       if (focusTab) document.getElementById(isDrink ? 'drinkTab' : 'foodTab').focus();
     }
@@ -513,12 +593,117 @@
       else showFoodResult(choice.item, choice.index, document.activeElement);
     }
 
+    function shuffleEntries(entries) {
+      const shuffled = entries.slice();
+      for (let index = shuffled.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+      }
+      return shuffled;
+    }
+
+    function renderDuelChoice(side, entry, isNew = false) {
+      const button = duelModal.querySelector(`[data-duel-side="${side}"]`);
+      const paletteList = state.duel.mode === 'drink' ? drinkPalettes : palettes;
+      const [a,b] = paletteList[entry.index % paletteList.length];
+      button.style.setProperty('--duel-a', a);
+      button.style.setProperty('--duel-b', b);
+      button.setAttribute('aria-label', `${entry.item.name}を残す`);
+      button.innerHTML = `<span class="duel-choice-art"><img src="${imageUrl(entry.item)}" alt="${entry.item.name}のイラスト"><span class="emoji-fallback" aria-hidden="true">${entry.item.emoji}</span></span><span class="duel-choice-body"><span class="duel-choice-label">こちらを残す</span><h3>${entry.item.name}</h3><p>${entry.item.desc}</p></span>`;
+      const image = button.querySelector('img');
+      const fallback = button.querySelector('.emoji-fallback');
+      image.addEventListener('error', () => { image.style.display = 'none'; fallback.style.display = 'block'; }, {once:true});
+      button.classList.toggle('is-new', isNew);
+      if (isNew) setTimeout(() => button.classList.remove('is-new'), 260);
+    }
+
+    function updateDuelMeta() {
+      const duel = state.duel;
+      if (!duel) return;
+      duelProgress.textContent = `${duel.excluded + 1}回目`;
+      duelRemaining.textContent = `残り ${duel.total - duel.excluded}候補`;
+      duelExcluded.textContent = `除外 ${duel.excluded}件`;
+      document.getElementById('duelModeLabel').textContent = duel.mode === 'drink' ? 'お酒・飲み物の2択' : 'ごはんの2択';
+      duelModal.querySelectorAll('.duel-choice').forEach(button => {
+        const entry = duel[button.dataset.duelSide];
+        button.classList.toggle('is-champion', Boolean(duel.champion && entry === duel.champion));
+      });
+      duelDecide.hidden = !duel.champion;
+      if (duel.champion) duelDecide.textContent = `${duel.champion.item.name}に決める`;
+    }
+
+    function closeDuel(restoreFocus = true) {
+      const trigger = state.duel?.trigger;
+      duelModal.classList.remove('open');
+      document.body.style.overflow = '';
+      state.duel = null;
+      if (restoreFocus && trigger && typeof trigger.focus === 'function') trigger.focus();
+    }
+
+    function finishDuel(entry) {
+      const mode = state.duel.mode;
+      const trigger = state.duel.trigger;
+      closeDuel(false);
+      if (mode === 'drink') showDrinkResult(entry.item, entry.index, trigger);
+      else showFoodResult(entry.item, entry.index, trigger);
+    }
+
+    function startDuel(mode = state.mode, trigger = document.activeElement) {
+      const visible = filterItems(mode);
+      if (!visible.length) {
+        const search = mode === 'food' ? foodSearch : drinkSearch;
+        search.focus();
+        if (search.animate) search.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}], {duration:260});
+        return;
+      }
+      if (visible.length === 1) {
+        const only = visible[0];
+        if (mode === 'drink') showDrinkResult(only.item, only.index, trigger);
+        else showFoodResult(only.item, only.index, trigger);
+        return;
+      }
+      const pool = shuffleEntries(visible);
+      state.duel = { mode, total:pool.length, excluded:0, champion:null, trigger, left:pool.pop(), right:pool.pop(), remaining:pool };
+      renderDuelChoice('left', state.duel.left);
+      renderDuelChoice('right', state.duel.right);
+      updateDuelMeta();
+      duelModal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      requestAnimationFrame(() => duelModal.querySelector('[data-duel-side="left"]').focus());
+    }
+
+    function chooseDuel(side) {
+      const duel = state.duel;
+      if (!duel) return;
+      const winner = duel[side];
+      const replaceSide = side === 'left' ? 'right' : 'left';
+      duel.champion = winner;
+      duel.excluded += 1;
+      if (!duel.remaining.length) {
+        finishDuel(winner);
+        return;
+      }
+      duel[replaceSide] = duel.remaining.pop();
+      renderDuelChoice(replaceSide, duel[replaceSide], true);
+      updateDuelMeta();
+    }
+
     document.querySelectorAll('[data-random]').forEach(button => button.addEventListener('click', () => chooseRandom(state.mode)));
+    document.querySelectorAll('[data-duel]').forEach(button => button.addEventListener('click', () => startDuel(state.mode, button)));
+    duelModal.querySelectorAll('[data-duel-side]').forEach(button => button.addEventListener('click', () => chooseDuel(button.dataset.duelSide)));
+    document.getElementById('duelDecide').addEventListener('click', () => { if (state.duel?.champion) finishDuel(state.duel.champion); });
+    document.getElementById('duelRestart').addEventListener('click', () => { if (state.duel) startDuel(state.duel.mode, state.duel.trigger); });
+    document.getElementById('closeDuel').addEventListener('click', () => closeDuel());
     document.getElementById('againButton').addEventListener('click', () => chooseRandom(state.modalMode));
     document.getElementById('closeModal').addEventListener('click', closeModal);
     document.getElementById('scrollButton').addEventListener('click', () => document.getElementById('catalog').scrollIntoView({behavior:'smooth'}));
     modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+    duelModal.addEventListener('click', e => { if (e.target === duelModal) closeDuel(); });
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape') return;
+      if (duelModal.classList.contains('open')) closeDuel();
+      else if (modal.classList.contains('open')) closeModal();
+    });
 
     filterItems('food');
     filterItems('drink');
