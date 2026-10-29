@@ -1,6 +1,7 @@
 {
+  "services": [{"binding":"YU_ZORA_ERROR_PAGES","service":"yu-zora-main"}],
   "name": "kyou-nani-taberu",
-  "main": "worker/index.js",
+  "main": "worker/shared-404/index.mjs",
   "compatibility_date": "2026-08-25",
   "assets": {
     "directory": "./dist",
